@@ -1,25 +1,137 @@
-select
-	com.duedil as duedil,
-	com.name as company_name,
+SELECT
+ com.duedil AS duedil,
+ com.name AS company_name,
+ com.linkedin_id,
+ com.industry_id,
+ ind.name AS industry_name,
+ com.sic2007code,
+ ST_Y( com.point ) AS latitude,
+ ST_X( com.point) AS longitude,
+ com.other_names,
+ com.turnover, com.previous_turnover, com.turnover_growth,
+ com.employees, com.previous_employees, com.employee_growth,
+ gwc."name" AS constituency,
+ gwc.population AS constituency_population,
+ gwc.mp AS company_hq_mp,
+ gwc.party AS company_hq_political_party,
+ com.updated AS company_updated,
+ array_to_json( array_agg( tn."name" ) ) AS company_tags,
+ bl.id,
+bl."firstName",
+bl."lastName",
+bl."formattedName",
+bl.summary,
+bl.positions_json,
+bl."publicProfileUrl",
+bl."pictureUrl",
+bl."pictureUrls",
+bl.datetime,
+bl.updated,
+bl."emailAddress",
+bl.headline,
+bl.location,
+bl.linkedin,
+bl.is_verified,
+ST_Y( ST_GEOMETRYN( bl.multipoint ,1 ) ) as person_longitude,
+ST_X( ST_GEOMETRYN( bl.multipoint ,1 ) ) as person_latitude,
+bl.distance,
+bl.hometown,
+bl.current_town,
+bl.near_work,
+bl.gender,
+bl.academic_subject,
+bl.number_of_events,
+bl.signup_date,
+bl.activity,
+bl.interests,
+bl.picture,
+bl.tagged_by_id,
+bl.sender_id,
+bl.generic_referrer_id,
+bl.phone,
+bl.notification,
+bl.twitter_handle,
+bl.potential_duplicates,
+bl.user_id,
+array_to_json( array_agg( distinct tn_p.name ) ) as person_tags
+
+
+ FROM leaders_company com, leaders_industry ind,
+ governments_westminsterconstituency gwc,
+ governments_ward gwa,
+ /** For company tags **/
+ tags_tagproperties tp,
+ tags_tag tn,
+ leaders_position pos,
+ leaders_businessleader bl,
+ /** For person tags **/
+ tags_tagproperties tp_p,
+ tags_tag tn_p
+
+WHERE
+bl.id = pos.speaker_id
+AND pos.company_id = com.id
+AND pos.is_current = TRUE
+AND com.industry_id = ind.id
+AND com.ward_id = gwa.id
+AND gwa.constituency_id = gwc.id
+AND com.id = tp.company_id
+AND tp.tag_id = tn.id
+AND tp_p.speaker_id = bl.id
+AND tp_p.tag_id = tn_p.id
+
+group by com.duedil,
+	com.name ,
 	com.linkedin_id,
 	com.industry_id,
-	ind.name as industry_name,
+	ind.name,
 	com.sic2007code,
-	ST_Y( com.point ) as latitude, 
-	ST_X( com.point) as longitude,
+	ST_Y( com.point ), 
+	ST_X( com.point),
 	com.other_names,
 	com.turnover, com.previous_turnover, com.turnover_growth,
 	com.employees, com.previous_employees, com.employee_growth,
-	gwc."name" as constituency,
-	gwc.population as constituency_population,
-	gwc.mp as company_hq_mp,
-	gwc.party as company_hq_political_party,
-	com.updated as company_updated
-	
- from leaders_company com, leaders_industry ind, 
- governments_westminsterconstituency gwc,
- governments_ward gwa
- 
-where com.industry_id = ind.id
-and com.ward_id = gwa.id
-and gwa.constituency_id = gwc.id
+	gwc."name",
+	gwc.population ,
+	gwc.mp,
+	gwc.party,
+	com.updated,
+	bl.id,
+bl."firstName",
+bl."lastName",
+bl."formattedName",
+bl.summary,
+bl.positions_json,
+bl."publicProfileUrl",
+bl."pictureUrl",
+bl."pictureUrls",
+bl.datetime,
+bl.updated,
+bl."emailAddress",
+bl.headline,
+bl.location,
+bl.linkedin,
+bl.is_verified,
+ST_Y( ST_GEOMETRYN( bl.multipoint ,1 ) ), -- as person_longitude,
+ST_X( ST_GEOMETRYN( bl.multipoint ,1 ) ),
+bl.distance,
+bl.hometown,
+bl.current_town,
+bl.near_work,
+bl.gender,
+bl.academic_subject,
+bl.number_of_events,
+bl.signup_date,
+bl.activity,
+bl.interests,
+bl.picture,
+bl.tagged_by_id,
+bl.sender_id,
+bl.generic_referrer_id,
+bl.phone,
+bl.notification,
+bl.twitter_handle,
+bl.potential_duplicates,
+bl.user_id,
+bl.profile_company_id
+
