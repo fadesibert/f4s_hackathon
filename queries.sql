@@ -20,7 +20,7 @@ SELECT
 bl."firstName",
 bl."lastName",
 bl."formattedName",
-bl.summary,
+regexp_replace( bl.summary, '[[:cntrl:]]', '', 'g' ) as summary,
 bl.positions_json,
 bl."publicProfileUrl",
 bl."pictureUrl",
